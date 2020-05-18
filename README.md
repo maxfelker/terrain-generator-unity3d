@@ -13,4 +13,4 @@ Fork me, patch me, make me better!
 Changelog
 ---
 
-* Add 3D rotation transform to reduce visible grid alignment in perlin noise. (Feb 21, 2020)
+- Add 3D rotation transform to reduce visible grid alignment in perlin noise by [KDotJPG](https://github.com/KdotJPG/) `b0e7105` 
