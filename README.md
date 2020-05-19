@@ -5,7 +5,8 @@ Simple perlin noise based terrain generator for Unity 3D.
 
 This project is intended to be a starting point for procedural Unity 3D terrain generation.  It uses some standard Unity 2019.3 assets and should work out of the box but no promises. 
 
-[Video demo here](https://youtu.be/55BXqpLDkn4)
+ - [v0.2 demo here](https://youtu.be/5T2BFXFjlK8) 
+ - [v0.1 demo here](https://youtu.be/55BXqpLDkn4)
 
 ## Get Started - Download the Project
 First step is to add the download the project to your computer
@@ -26,4 +27,4 @@ This code was originally proof-of-concept code I cobbled together from a tutoria
 
 ### Contributors
 - [mw-felker](https://github.com/mw-felker/)
-- [KDotJPG](https://github.com/KdotJPG/) b0e7105 
+- [KDotJPG](https://github.com/KdotJPG/) 
