@@ -5,48 +5,45 @@ using UnityEngine.UI;
 
 public class GameController : MonoBehaviour
 {
-    private const int Radius = 4;
-
-    private Vector2i PreviousPlayerChunkPosition;
-
-    public Transform Player;
-
+    private Vector2i previousPlayerChunkPosition;
+    public Transform playerTransform;
     public TerrainChunkGenerator Generator;
 	
     public void Start()
     {
+        playerTransform.gameObject.SetActive(false);
         StartCoroutine(InitializeCoroutine());
     }
 
     private IEnumerator InitializeCoroutine()
     {
-        var canActivateCharacter = false;
-
-        Generator.UpdateTerrain(Player.position, Radius);
-
-        do
-        {
-            var exists = Generator.IsTerrainAvailable(Player.position);
-            if (exists)
-                canActivateCharacter = true;
+        bool terrainGenerated = false;
+        Generator.UpdateTerrain(playerTransform.position);
+        do{
+            terrainGenerated = Generator.IsTerrainAvailable(playerTransform.position);
             yield return null;
-        } while (!canActivateCharacter);
+        } while (!terrainGenerated);
+        ActivatePlayer();
+    }
 
-        PreviousPlayerChunkPosition = Generator.GetChunkPosition(Player.position);
-        Player.position = new Vector3(Player.position.x, Generator.GetTerrainHeight(Player.position) + 0.5f, Player.position.z);
-        Player.gameObject.SetActive(true);
+    private void ActivatePlayer() {
+        previousPlayerChunkPosition = Generator.GetChunkPosition(playerTransform.position);
+        Vector3 newPosition = new Vector3(
+            playerTransform.position.x, 
+            Generator.GetTerrainHeight(playerTransform.position) + 0.5f, 
+            playerTransform.position.z
+        );
+        playerTransform.position = newPosition;
+        playerTransform.gameObject.SetActive(true);
     }
 
     private void Update()
     {
-        if (Player.gameObject.activeSelf)
-        {
-            var playerChunkPosition = Generator.GetChunkPosition(Player.position);
-            if (!playerChunkPosition.Equals(PreviousPlayerChunkPosition))
-            {
-                Generator.UpdateTerrain(Player.position, Radius);
-                PreviousPlayerChunkPosition = playerChunkPosition;
-            }
+        var playerChunkPosition = Generator.GetChunkPosition(playerTransform.position);
+        if (!playerChunkPosition.Equals(previousPlayerChunkPosition)) {
+            Generator.UpdateTerrain(playerTransform.position);
+            previousPlayerChunkPosition = playerChunkPosition;
         }
     }
+
 }

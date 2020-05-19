@@ -11,6 +11,14 @@ namespace TerrainGenerator
         public Texture2D FlatTexture;
         public Texture2D SteepTexture;
 
+        private int heightMapResolution = 129;
+        private int alphaMapResolution = 129;
+
+        public int generationRadius = 4;
+
+        public int terrainChunkLength = 100;
+        public int terrainChunkHeight = 40;
+
 		public float perlinHeight = 1.5F;
 		public float perlinDamper = 0.25F;
 
@@ -20,17 +28,21 @@ namespace TerrainGenerator
 
         private ChunkCache Cache;
 
+
         private void Awake()
         {
-            Settings = new TerrainChunkSettings(129, 129, 100, 40, FlatTexture, SteepTexture, TerrainMaterial);
-
+            this.name = "TerrainGenerator";   // Enforce name to collect chunks later
+            Settings = new TerrainChunkSettings(
+                heightMapResolution, 
+                alphaMapResolution, 
+                terrainChunkLength, 
+                terrainChunkHeight, 
+                FlatTexture, 
+                SteepTexture, 
+                TerrainMaterial
+            );
             Cache = new ChunkCache();
         }
-
-		private void RandomizePerlin() {
-			perlinHeight = Random.Range (perlinHeight, 4.0F);
-			perlinDamper = Random.Range (perlinDamper, 2.5F);
-		}
 
         private void Update()
         {
@@ -69,10 +81,10 @@ namespace TerrainGenerator
             return result;
         }
 
-        public void UpdateTerrain(Vector3 worldPosition, int radius)
+        public void UpdateTerrain(Vector3 worldPosition)
         {
             var chunkPosition = GetChunkPosition(worldPosition);
-            var newPositions = GetChunkPositionsInRadius(chunkPosition, radius);
+            var newPositions = GetChunkPositionsInRadius(chunkPosition, generationRadius);
 
             var loadedChunks = Cache.GetGeneratedChunks();
             var chunksToRemove = loadedChunks.Except(newPositions).ToList();
@@ -80,9 +92,6 @@ namespace TerrainGenerator
             var positionsToGenerate = newPositions.Except(chunksToRemove).ToList();
             foreach (var position in positionsToGenerate)
                 GenerateChunk(position.X, position.Z);
-
-            //foreach (var position in chunksToRemove)
-             //   RemoveChunk(position.X, position.Z);
         }
 
         public Vector2i GetChunkPosition(Vector3 worldPosition)

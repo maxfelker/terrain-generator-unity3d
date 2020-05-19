@@ -21,14 +21,15 @@ namespace TerrainGenerator
 
         private object HeightmapThreadLockObject { get; set; }
 
+        private GameObject TerrainRoot;
+
         public TerrainChunk(TerrainChunkSettings settings, NoiseProvider noiseProvider, int x, int z)
         {
             HeightmapThreadLockObject = new object();
-
+            TerrainRoot = GameObject.Find("TerrainGenerator");
             Settings = settings;
             NoiseProvider = noiseProvider;
             Neighborhood = new TerrainChunkNeighborhood();
-
             Position = new Vector2i(x, z);
         }
 
@@ -75,24 +76,47 @@ namespace TerrainGenerator
 
         #region Main terrain generation
 
+        // Creates the terrain object based on settings
         public void CreateTerrain()
         {
-            Data = new TerrainData();
-            Data.heightmapResolution = Settings.HeightmapResolution;
-            Data.alphamapResolution = Settings.AlphamapResolution;
-            Data.SetHeights(0, 0, Heightmap);
-            ApplyTextures(Data);
-
-            Data.size = new Vector3(Settings.Length, Settings.Height, Settings.Length);
-            var newTerrainGameObject = Terrain.CreateTerrainGameObject(Data);
-            newTerrainGameObject.transform.position = new Vector3(Position.X * Settings.Length, 0, Position.Z * Settings.Length);
-
-            Terrain = newTerrainGameObject.GetComponent<Terrain>();
+            TerrainData data = GenerateTerrainData();            
+            Terrain = GenerateTerrain(data);
             Terrain.heightmapPixelError = 8;
             Terrain.materialType = UnityEngine.Terrain.MaterialType.Custom;
             Terrain.materialTemplate = Settings.TerrainMaterial;
             Terrain.reflectionProbeUsage = UnityEngine.Rendering.ReflectionProbeUsage.Off;
             Terrain.Flush();
+        }
+
+        // Creates TerrainData config based on settings supplied via inspector
+        private TerrainData GenerateTerrainData() 
+        {
+            TerrainData data = new TerrainData();
+            data.heightmapResolution = Settings.HeightmapResolution;
+            data.alphamapResolution = Settings.AlphamapResolution;
+            data.SetHeights(0, 0, Heightmap);
+            ApplyTextures(data);
+            data.size = new Vector3(Settings.Length, Settings.Height, Settings.Length);
+            return data;
+        }
+
+        // Creates Terrain game object based on TerrainData and returns Terrain component
+        private Terrain GenerateTerrain(TerrainData data) 
+        {
+            GameObject newTerrainGameObject = Terrain.CreateTerrainGameObject(data);
+            newTerrainGameObject.transform.position = new Vector3(Position.X * Settings.Length, 0, Position.Z * Settings.Length);
+            newTerrainGameObject.gameObject.name = GenerateTerrainName();
+            newTerrainGameObject.transform.parent = TerrainRoot.transform; // Set chunk as child of TerrainGenerator transform
+            return newTerrainGameObject.GetComponent<Terrain>();
+        }
+        
+        // Creates a unique name for terrain gameObject
+        private string GenerateTerrainName()
+        {
+            string posX = (Position.X * Settings.Length).ToString();
+            string posY = "0";
+            string posZ = (Position.Z * Settings.Length).ToString();
+            return "Terrain " + posX + ", " + posY + ", " + posZ;
         }
 
         private void ApplyTextures(TerrainData terrainData)
